@@ -6,20 +6,23 @@ TF_VAR_myProject	?= $(shell $(TF_VAR_myProject))
 TF_VAR_envBuild 	?= $(shell $(TF_VAR_envBuild))
 
 # Start Terraforming
-all:	init plan apply
+all:	init plan apply creds
 
 init:	## Initialze the build
 	terraform init -get=true -backend=true -reconfigure
 
 plan:	## Initialze and Plan the build with output log
 	terraform fmt -recursive=true
-	terraform plan -no-color 2>&1 | \
-		tee /tmp/tf-$(TF_VAR_myProject)-plan.out
+	terraform plan -out=/tmp/tf-$(TF_VAR_myProject).plan \
+		-no-color 2>&1 | tee /tmp/tf-$(TF_VAR_myProject)-plan.log
 
 apply:	## Build Terraform project with output log
-	terraform apply --auto-approve -no-color \
-		-input=false 2>&1 | \
-		tee /tmp/tf-$(TF_VAR_myProject)-apply.out
+	terraform apply --auto-approve -no-color -input=false \
+		/tmp/tf-$(TF_VAR_myProject).plan \
+		2>&1 | tee /tmp/tf-$(TF_VAR_myProject)-apply.log
+
+creds:	## Retrieve credentials for new clusters
+	addons/get-creds.sh
 
 addr:	## Retrieve the public_ip address from the Instance
 	terraform state show module.compute.aws_instance.test_instance | grep 'public_ip' | grep -v associate_public_ip_address
