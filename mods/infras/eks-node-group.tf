@@ -195,7 +195,7 @@ resource "aws_security_group_rule" "apps_nodes_ingress_cluster" {
 */
 data "aws_route53_zone" "apps_nodes_xdns_zone" {
   name         = var.dns_zone
-  private_zone = true
+  private_zone = false
 }
 
 resource "aws_iam_role_policy_attachment" "apps_nodes_worker_node_xdns_policy" {
