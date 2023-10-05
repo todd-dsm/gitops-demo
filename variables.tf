@@ -48,10 +48,10 @@ variable "builder" {
   type        = string
 }
 
-variable "officeIPAddr" {
-  description = "The IP address of the Current (outbound) Gateway: individual A.B.C.D/32 or block A.B.C.D/29"
-  type        = string
-}
+#variable "officeIPAddr" {
+#  description = "The IP address of the Current (outbound) Gateway: individual A.B.C.D/32 or block A.B.C.D/29"
+#  type        = string
+#}
 
 /*
   ---------------------------------------------------------|------------------------------------------------------------

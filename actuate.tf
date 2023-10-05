@@ -5,7 +5,6 @@ module "clusters" {
   source        = "./mods/infras"
   dns_zone      = var.dns_zone
   builder       = var.builder
-  officeIPAddr  = var.officeIPAddr
   minDistSize   = var.minDistSize
   maxDistSize   = var.maxDistSize
   project       = var.project

@@ -19,10 +19,6 @@ variable "project" {
   type        = string
 }
 
-variable "officeIPAddr" {
-  description = "IP address of current gateway"
-  type        = string
-}
 
 variable "cluster_apps" {
   description = "The Cluster Name; I.E.: $myProject-$envBuild"
@@ -38,6 +34,11 @@ variable "builder" {
   description = "builder of the things"
   type        = string
 }
+
+#variable "officeIPAddr" {
+#  description = "IP address of current gateway"
+#  type        = string
+#}
 
 /*
   ---------------------------------------------------------|------------------------------------------------------------
