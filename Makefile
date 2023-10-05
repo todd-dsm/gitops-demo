@@ -13,12 +13,11 @@ init:	## Initialze the build
 
 plan:	## Initialze and Plan the build with output log
 	terraform fmt -recursive=true
-	terraform plan -out=/tmp/tf-$(TF_VAR_myProject).plan \
-		-no-color 2>&1 | tee /tmp/tf-$(TF_VAR_myProject)-plan.log
+	terraform plan -out="$(filePlan)" -no-color 2>&1 | \
+		tee /tmp/tf-$(TF_VAR_myProject)-plan.log
 
 apply:	## Build Terraform project with output log
-	terraform apply --auto-approve -no-color -input=false \
-		/tmp/tf-$(TF_VAR_myProject).plan \
+	terraform apply --auto-approve -no-color -input=false "$(filePlan)" \
 		2>&1 | tee /tmp/tf-$(TF_VAR_myProject)-apply.log
 
 creds:	## Retrieve credentials for new clusters
@@ -44,7 +43,7 @@ clean:	## Clean WARNING Message
 clean-all:	## Destroy Terraformed resources and all generated files with output log
 	terraform apply -destroy -auto-approve -no-color 2>&1 | \
 	 	tee /tmp/tf-$(TF_VAR_myProject)-destroy.out
-	rm -f "$(filePlan)"
+	rm -f "$(filePlan)" /tmp/tf-$(TF_VAR_myProject)-*.log
 	rm -rf .terraform/ .terraform.lock.hcl
 
 #-----------------------------------------------------------------------------#
