@@ -7,6 +7,7 @@ TF_VAR_envBuild 	?= $(shell $(TF_VAR_envBuild))
 
 # Start Terraforming
 all:	init plan apply creds
+#all:	lhost mlb 
 
 init:	## Initialze the build
 	terraform init -get=true -backend=true -reconfigure
@@ -21,7 +22,19 @@ apply:	## Build Terraform project with output log
 		2>&1 | tee /tmp/tf-$(TF_VAR_myProject)-apply.log
 
 creds:	## Retrieve credentials for new clusters
-	addons/get-creds.sh
+	addons/eks/get-creds.sh
+
+data:	## Install KubeDB to support locally managed DATA
+	#@addons/kubedb/kubedb-inst.sh
+	#@addons/kubedb/demo-config.sh
+
+divr:	## ---------------------- 'make all' ends here ------------------------
+
+lhost:	## Bootstrap a local Kubernetes environment
+	@local/dev-cluster.sh
+
+mlb:	## Configure MetalLB for use with Minikube
+	@addons/metallb/metallb-config.sh
 
 addr:	## Retrieve the public_ip address from the Instance
 	terraform state show module.compute.aws_instance.test_instance | grep 'public_ip' | grep -v associate_public_ip_address
