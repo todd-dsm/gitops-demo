@@ -27,13 +27,15 @@ set -x
 ### VARIABLES
 ###----------------------------------------------------------------------------
 # ENV Stuff
-#: "${1?  Wheres my first agument, bro!}"
+#: "${1?  Wheres the first agument, bro!}"
 versKubeDB='v2023.08.18'
-NS='demo'
 
 # Data
-dirLicense="$HOME/Downloads/kubedb"
-fileLicense="${dirLicense}/kubedb-enterprise-license-95757740-4821-46c7-ba0c-e8b085f5bd38.txt"
+licDir="$HOME/Downloads/kubedb"
+licType='kubedb-enterprise-license'
+licKey='c2f0369e-0ac9-4800-9929-63975f9f5466' # cluster UID
+myLicense="${licDir}/${licType}-${licKey}.txt"
+#stat "$myLicense"
 
 
 ###----------------------------------------------------------------------------
@@ -60,15 +62,15 @@ helm install kubedb appscode/kubedb \
     --set kubedb-autoscaler.enabled=true \
     --set kubedb-dashboard.enabled=true \
     --set kubedb-schema-manager.enabled=true \
-    --set-file global.license="$fileLicense"
+    --set-file global.license="$myLicense"
 
 
 ###---
 ### Wait for pods to complete before proceeding
 ###---
 pMsg "Waiting for KubeDB to finish installation..."
-kubectl -n kubedb wait --for=condition=ready pod \
-    -l "app.kubernetes.io/instance=kubedb"
+kubectl -n kubedb wait --for=condition=Ready=true --timeout='60s' \
+    pod -l "app.kubernetes.io/instance=kubedb"
 
 
 ###---
@@ -78,55 +80,8 @@ pMsg "These CRDs are now available on the system..."
 kubectl get crd -l app.kubernetes.io/name=kubedb
 
 
-
-
 ###---
-### Create Demo
-###---
-
-
-###---
-### Send pgAdmin to the cluster
-###---
-kubectl create -f addons/kubedb/pgadmin.yaml
-
-# From: https://raw.githubusercontent.com/kubedb/docs/v2023.08.18/docs/examples/postgres/quickstart/pgadmin.yaml
-
-###---
-### Collect the address and port info
-###---
-mkIPAddr="$(mikube ip)"
-nodePort="$(kubectl -n demo get service/pgadmin -o=jsonpath='{.spec.ports[].nodePort}')"
-
-# For example:
-# http://${mkIPAddr}:${NodePort} would expand to something like:
-# http://192.168.49.2:32248
-
-
-###---
-### Let's go see what's out there
-###---
-minikube service pgadmin -n demo --url "http://${mkIPAddr}:${nodePort}"&
-
-
-###---
-### REQ
-###---
-pMsg "Now, follow the URL and open a new Terminal window to continue working"
-
-
-###---
-### REQ
-###---
-
-
-###---
-### REQ
-###---
-
-
-###---
-### REQ
+### Send service object for the KubeDB Admin UI
 ###---
 
 
