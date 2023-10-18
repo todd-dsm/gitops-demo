@@ -63,8 +63,9 @@ kubectl delete namespace kubedb
 
 
 ###---
-### Send service object for the KubeDB Admin UI
+### Give it a moment to settle
 ###---
+sleep 5s
 
 
 ###---
