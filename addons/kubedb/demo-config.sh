@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2154
 #  PURPOSE: Install KubeDB on a Kubernetes cluster.
 # -----------------------------------------------------------------------------
 #  PREREQS: a)
@@ -19,23 +19,21 @@
 # -----------------------------------------------------------------------------
 #  CREATED: 2023/10/05
 # -----------------------------------------------------------------------------
-#set -x
+set -x
 
 ###----------------------------------------------------------------------------
 ### VARIABLES
 ###----------------------------------------------------------------------------
 # ENV Stuff
 : "${emailID?  There appears to be no eamil EXPORTed to the environment, exiting!}"
-#versKubeDB='v2023.08.18'
-deploymentTmpl='addons/kubedb/tmpls/pgadmin.tmpl'
-kubeManifest='/tmp/pgadmin.yaml'
-export myNS='demo'
 
 # Data
-rawManifest='https://github.com/kubedb/docs/raw/v2023.08.18/docs/examples/postgres/quickstart/quick-postgres.yaml'
-export outputDir='/tmp/postgres'
-export fileName="${rawManifest##*/}"
-export kubeManifest="${outputDir}/${fileName}"
+### pgAdmin
+# FIXME: templatize from the raw file; using the stub for now
+#pgAdminRaw="https://raw.githubusercontent.com/kubedb/docs/${versKubeDB}/docs/examples/postgres/quickstart/pgadmin.yaml"
+pgAdminTemplate='addons/kubedb/tmpls/pgadmin.tmpl'
+
+### PostgreSQL
 
 
 ###----------------------------------------------------------------------------
@@ -51,21 +49,21 @@ function pMsg() {
 ### MAIN PROGRAM
 ###----------------------------------------------------------------------------
 ### Create pgAdmin manifest from a template file
+### REF: https://raw.githubusercontent.com/kubedb/docs/v2023.08.18/docs/examples/postgres/quickstart/pgadmin.yaml
 ###---
-cat $deploymentTmpl | envsubst > "$kubeManifest"
+cat < "$pgAdminTemplate" | envsubst > "$pgAdminManifest"
 
 
 ###---
 ### Send pgAdmin to the cluster
 ###---
-kubectl apply -f "$kubeManifest"
+kubectl apply -f "$pgAdminManifest"
 
-# From: https://raw.githubusercontent.com/kubedb/docs/v2023.08.18/docs/examples/postgres/quickstart/pgadmin.yaml
 
 ###---
 ### Wait for it...
 ###---
-kubectl -n "$myNS" wait --for=condition=Ready=true --timeout='30s' \
+kubectl -n "$kubeDbNs" wait --for=condition=Ready=true --timeout='30s' \
    pod -l app=pgadmin
 
 
@@ -73,7 +71,7 @@ kubectl -n "$myNS" wait --for=condition=Ready=true --timeout='30s' \
 ### Collect the address and port info: USUALLY NOT NECESSARY
 ###---
 #mkIPAddr="$(minikube ip)"
-#nodePort="$(kubectl -n "$myNS" get service/pgadmin -o=jsonpath='{.spec.ports[].nodePort}')"
+#nodePort="$(kubectl -n "$kubeDbNs" get service/pgadmin -o=jsonpath='{.spec.ports[].nodePort}')"
 
 # For example:
 # http://${mkIPAddr}:${NodePort} would expand to something like:
@@ -83,47 +81,54 @@ kubectl -n "$myNS" wait --for=condition=Ready=true --timeout='30s' \
 ###---
 ### Announce
 ###---
-pMsg ""
-pMsg ""
-pMsg "Now, follow the URL and open a new Terminal window to continue working"
-pMsg ""
-pMsg ""
+#pMsg ""
+#pMsg ""
+#pMsg "Now, follow the URL and open a new Terminal window to continue working"
+#pMsg ""
+#pMsg ""
 
 
 ###---
 ### Let's go see what's out there
 ### FIXME: move this (L60-L85) to the end of the entire run
 ###---
-minikube -n "$myNS" service pgadmin --url&
+#minikube -n "$kubeDbNs" service pgadmin --url&
 
 
 ###----------------------------------------------------------------------------
 ### Create a PostgreSQL database
-### REF: https://kubedb.com/docs/v2023.08.18/guides/postgres/quickstart/quickstart/#create-a-postgresql-database
+### REF: "https://kubedb.com/docs/${versKubeDB}/guides/postgres"
+### REF: "https://kubedb.com/docs/${versKubeDB}/guides/postgres/quickstart/quickstart/#create-a-postgresql-database"
 ###----------------------------------------------------------------------------
 ### Fetch a Manifest
 ###---
-curl -L --create-dirs -O --output-dir "$outputDir" "$rawManifest"
+pMsg ""
+pMsg ""
+pMsg ""
+pMsg "Creating the PostgreSQL database"
+pMsg ""
+curl -s -L "$rawPgSqlManifest" -o "$pgSqlManifest"
+
 
 ### Change the namespace
-#if [[ "$myNS" == 'demo' ]]; then
-#    sed -i 's/demo/yo/g' "$kubeManifest"
+#if [[ "$kubeDbNs" == 'demo' ]]; then
+#    sed -i 's/demo/yo/g' "$pgSqlManifest"
 #fi
 
-### modify terminationPolicy for demo
-sed -i '/terminationPolicy/ s/DoNotTerminate/Delete/g' "$kubeManifest"
+### modify the local manifest terminationPolicy for demo
+sed -i '/terminationPolicy/ s/DoNotTerminate/Delete/g' "$pgSqlManifest"
 
 
 ###---
 ### Send it...
 ###---
-kubectl apply -f "$kubeManifest"
+kubectl -n "$kubeDbNs" apply -f "$pgSqlManifest"
 
 
 ###---
 ### Wait for it...
 ###---
-kubectl -n "$myNS" wait --for=condition=Ready=true --timeout='30s' \
+kubectl -n "$kubeDbNs" wait --for=condition=Ready=true --timeout='30s' \
    pod -l app=pgadmin
 
 

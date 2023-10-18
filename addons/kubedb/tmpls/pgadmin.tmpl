@@ -1,7 +1,8 @@
+# https://kubedb.com/docs/v2023.10.9/guides/postgres/quickstart/quickstart/#install-pgadmin
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: $myNS
+  name: $kubeDdNs
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -9,7 +10,7 @@ metadata:
   labels:
     app: pgadmin
   name: pgadmin
-  namespace: $myNS
+  namespace: $kubeDdNs
 spec:
   replicas: 1
   selector:
@@ -49,7 +50,7 @@ metadata:
   labels:
     app: pgadmin
   name: pgadmin
-  namespace: $myNS
+  namespace: $kubeDdNs
 spec:
   ports:
   - name: http

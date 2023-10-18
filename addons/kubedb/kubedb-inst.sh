@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2154
 #  PURPOSE: Install KubeDB on a Kubernetes cluster.
 # -----------------------------------------------------------------------------
 #  PREREQS: a) configure the AppsCode Helm repo
@@ -28,12 +28,10 @@ set -x
 ###----------------------------------------------------------------------------
 # ENV Stuff
 #: "${1?  Wheres the first agument, bro!}"
-versKubeDB='v2023.08.18'
 
 # Data
 licDir="$HOME/Downloads/kubedb"
 licType='kubedb-enterprise-license'
-licKey='c2f0369e-0ac9-4800-9929-63975f9f5466' # cluster UID
 myLicense="${licDir}/${licType}-${licKey}.txt"
 #stat "$myLicense"
 
@@ -67,6 +65,7 @@ helm install kubedb appscode/kubedb \
 
 ###---
 ### Wait for pods to complete before proceeding
+###   * Usually the 'kubedb-ops-manager'; wait it out
 ###---
 pMsg "Waiting for KubeDB to finish installation..."
 kubectl -n kubedb wait --for=condition=Ready=true --timeout='60s' \
@@ -81,8 +80,9 @@ kubectl get crd -l app.kubernetes.io/name=kubedb
 
 
 ###---
-### Send service object for the KubeDB Admin UI
+### Trail the logs for errors
 ###---
+#kubectl -n kubedb logs -l app.kubernetes.io/instance=kubedb
 
 
 ###---
