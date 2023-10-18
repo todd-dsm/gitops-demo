@@ -22,13 +22,19 @@ apply:	## Build Terraform project with output log
 		2>&1 | tee /tmp/tf-$(TF_VAR_myProject)-apply.log
 
 creds:	## Retrieve credentials for new clusters
-	addons/eks/get-creds.sh
+	@addons/eks/get-creds.sh
+
+ekscfg:	## Additional Cluster Configurations
+	@addons/eks/add-cluster-configs.sh
 
 data:	## Install KubeDB to support locally managed DATA
-	#@addons/kubedb/kubedb-inst.sh
-	#@addons/kubedb/demo-config.sh
+	@addons/kubedb/kubedb-inst.sh
+	@addons/kubedb/demo-config.sh
 
 divr:	## ---------------------- 'make all' ends here ------------------------
+
+rmdb:	## Install KubeDB to support locally managed DATA
+	@addons/kubedb/kubedb-remove.sh
 
 lhost:	## Bootstrap a local Kubernetes environment
 	@local/dev-cluster.sh
@@ -54,6 +60,7 @@ clean:	## Clean WARNING Message
 	@exit
 
 clean-all:	## Destroy Terraformed resources and all generated files with output log
+	@addons/kubedb/kubedb-remove.sh
 	terraform apply -destroy -auto-approve -no-color 2>&1 | \
 	 	tee /tmp/tf-$(TF_VAR_myProject)-destroy.out
 	rm -f "$(filePlan)" /tmp/tf-$(TF_VAR_myProject)-*.log
