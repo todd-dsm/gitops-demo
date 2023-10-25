@@ -42,9 +42,9 @@ function pMsg() {
 ###----------------------------------------------------------------------------
 ### clean up the outstanding log groups
 ###---
-while read -r logGroupName; do
-    echo "LOG-GROUP: $logGroupName"
-done <<< "$(aws logs describe-log-groups --query='logGroups[].logGroupName' --output=text)"
+#while read -r logGroupName; do
+#    echo "LOG-GROUP: $logGroupName"
+#done <<< "$(aws logs describe-log-groups --query='logGroups[].logGroupName' --output=text)"
 
 
 ###---
